@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Daily Challenge - Kids Math Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧮 Math Daily Challenge</h1>
+            <p>Test your math skills and become a math champion!</p>
+            <div class="header-buttons">
+                <button id="show-history" class="btn btn-secondary">📊 View History</button>
+                <button id="show-game" class="btn btn-primary hidden">🎮 Back to Game</button>
+            </div>
+        </header>
+
+        <!-- Configuration Panel -->
+        <div id="config-panel" class="config-panel">
+            <h2>Game Settings</h2>
+            <div class="config-row">
+                <label for="x-min">X Minimum:</label>
+                <input type="number" id="x-min" value="1" min="1" max="20">
+            </div>
+            <div class="config-row">
+                <label for="x-max">X Maximum:</label>
+                <input type="number" id="x-max" value="10" min="1" max="20">
+            </div>
+            <div class="config-row">
+                <label for="y-min">Y Minimum:</label>
+                <input type="number" id="y-min" value="1" min="1" max="20">
+            </div>
+            <div class="config-row">
+                <label for="y-max">Y Maximum:</label>
+                <input type="number" id="y-max" value="10" min="1" max="20">
+            </div>
+            <div class="config-row">
+                <label for="total-questions">Total Questions:</label>
+                <input type="number" id="total-questions" value="10" min="1" max="50">
+            </div>
+            <button id="start-game" class="btn btn-primary">Start Game</button>
+        </div>
+
+        <!-- Game Panel -->
+        <div id="game-panel" class="game-panel hidden">
+            <div class="game-header">
+                <div class="score">Score: <span id="current-score">0</span></div>
+                <div class="progress">Question <span id="current-question">1</span> of <span id="total-questions-display">10</span></div>
+            </div>
+
+            <div class="question-container">
+                <div id="question" class="question"></div>
+                <div class="answer-container">
+                    <input type="number" id="user-answer" placeholder="Your answer..." step="any">
+                    <button id="submit-answer" class="btn btn-submit">Submit</button>
+                </div>
+            </div>
+
+            <div id="feedback" class="feedback hidden">
+                <div id="feedback-content"></div>
+                <button id="next-question" class="btn btn-next hidden">Next Question</button>
+            </div>
+        </div>
+
+        <!-- Results Panel -->
+        <div id="results-panel" class="results-panel hidden">
+            <div id="results-content"></div>
+            <button id="restart-game" class="btn btn-primary">Try Again</button>
+            <button id="new-game" class="btn btn-secondary">New Game</button>
+        </div>
+
+        <!-- History Panel -->
+        <div id="history-panel" class="history-panel hidden">
+            <h2>📊 Test History - Last 7 Days</h2>
+            <div id="history-content" class="history-content">
+                <div class="no-history">
+                    <p>No test history available yet. Start playing to see your progress!</p>
+                </div>
+            </div>
+            <button id="back-to-game" class="btn btn-primary">Back to Game</button>
+        </div>
+
+        <!-- Detailed Test View -->
+        <div id="test-detail-panel" class="test-detail-panel hidden">
+            <h2 id="test-detail-title">Test Details</h2>
+            <div id="test-detail-content" class="test-detail-content"></div>
+            <button id="back-to-history" class="btn btn-secondary">Back to History</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
