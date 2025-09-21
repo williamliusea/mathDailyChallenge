@@ -466,17 +466,57 @@ class MathGame {
         } else {
             this.feedbackElement.className = 'feedback incorrect';
             this.feedbackContent.innerHTML = `
-                <div class="feedback-content">❌ Incorrect. Let's see the right answer:</div>
+                <div class="feedback-content">❌ Incorrect. Please enter the correct answer to continue:</div>
                 <div class="answer-comparison">
                     <div class="answer-box user-answer-box">Your answer: ${userAnswer}</div>
                     <div class="answer-box correct-answer-box">Correct answer: ${correctAnswer}</div>
                 </div>
+                <div class="correct-answer-input">
+                    <input type="number" id="correct-answer-input" placeholder="Enter the correct answer..." step="any">
+                    <button id="verify-correct-answer" class="btn btn-verify" disabled>Verify Answer</button>
+                </div>
             `;
-            // Show next button after 5 seconds for incorrect answers
-            setTimeout(() => {
-                this.nextQuestionBtn.classList.remove('hidden');
-            }, 5000);
+            
+            // Set up the correct answer verification
+            this.setupCorrectAnswerVerification(correctAnswer);
         }
+    }
+
+    setupCorrectAnswerVerification(correctAnswer) {
+        const correctAnswerInput = document.getElementById('correct-answer-input');
+        const verifyBtn = document.getElementById('verify-correct-answer');
+        
+        // Enable verify button when user types the correct answer
+        correctAnswerInput.addEventListener('input', () => {
+            const userInput = parseFloat(correctAnswerInput.value);
+            const isCorrect = !isNaN(userInput) && Math.abs(userInput - correctAnswer) < 0.001;
+            verifyBtn.disabled = !isCorrect;
+            
+            if (isCorrect) {
+                verifyBtn.classList.add('btn-success');
+                verifyBtn.textContent = '✓ Correct!';
+            } else {
+                verifyBtn.classList.remove('btn-success');
+                verifyBtn.textContent = 'Verify Answer';
+            }
+        });
+        
+        // Allow Enter key to verify
+        correctAnswerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !verifyBtn.disabled) {
+                this.nextQuestion();
+            }
+        });
+        
+        // Verify button click
+        verifyBtn.addEventListener('click', () => {
+            if (!verifyBtn.disabled) {
+                this.nextQuestion();
+            }
+        });
+        
+        // Focus on the input
+        correctAnswerInput.focus();
     }
 
     nextQuestion() {
