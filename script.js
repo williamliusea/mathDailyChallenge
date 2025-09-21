@@ -30,6 +30,12 @@ class MathGame {
         this.totalQuestionsInput = document.getElementById('total-questions');
         this.startGameBtn = document.getElementById('start-game');
         
+        // Operation checkboxes
+        this.operationAdd = document.getElementById('operation-add');
+        this.operationSubtract = document.getElementById('operation-subtract');
+        this.operationMultiply = document.getElementById('operation-multiply');
+        this.operationDivide = document.getElementById('operation-divide');
+        
         // Game elements
         this.questionElement = document.getElementById('question');
         this.userAnswerInput = document.getElementById('user-answer');
@@ -305,6 +311,15 @@ class MathGame {
         this.showPanel('test-detail');
     }
 
+    getSelectedOperations() {
+        const operations = [];
+        if (this.operationAdd.checked) operations.push('+');
+        if (this.operationSubtract.checked) operations.push('-');
+        if (this.operationMultiply.checked) operations.push('*');
+        if (this.operationDivide.checked) operations.push('/');
+        return operations;
+    }
+
     startGame() {
         // Validate configuration
         const xMin = parseInt(this.xMinInput.value);
@@ -323,6 +338,13 @@ class MathGame {
             return;
         }
 
+        // Check if at least one operation is selected
+        const selectedOperations = this.getSelectedOperations();
+        if (selectedOperations.length === 0) {
+            alert('Please select at least one operation to practice!');
+            return;
+        }
+
         // Initialize game
         this.totalQuestions = totalQuestions;
         this.currentQuestion = 0;
@@ -334,6 +356,7 @@ class MathGame {
         this.xMax = xMax;
         this.yMin = yMin;
         this.yMax = yMax;
+        this.selectedOperations = selectedOperations; // Store selected operations
 
         // Generate questions
         this.generateQuestions();
@@ -346,7 +369,7 @@ class MathGame {
 
     generateQuestions() {
         this.questions = [];
-        const operations = ['+', '-', '*', '/'];
+        const operations = this.selectedOperations || ['+', '-', '*', '/']; // Fallback to all operations
         
         for (let i = 0; i < this.totalQuestions; i++) {
             const operation = operations[Math.floor(Math.random() * operations.length)];
@@ -585,6 +608,25 @@ class MathGame {
         this.currentScoreElement.textContent = this.score;
         this.currentQuestionElement.textContent = this.currentQuestion + 1;
         this.totalQuestionsDisplay.textContent = this.totalQuestions;
+        
+        // Update operations display in game header
+        this.updateOperationsDisplay();
+    }
+
+    updateOperationsDisplay() {
+        const operationsDisplay = document.getElementById('operations-display');
+        if (operationsDisplay) {
+            const operationSymbols = {
+                '+': '➕',
+                '-': '➖', 
+                '*': '✖️',
+                '/': '➗'
+            };
+            
+            const selectedOps = this.selectedOperations || [];
+            const displayText = selectedOps.map(op => operationSymbols[op]).join(' ');
+            operationsDisplay.textContent = displayText;
+        }
     }
 
     showPanel(panelName) {

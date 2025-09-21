@@ -40,6 +40,27 @@
                 <label for="total-questions">Total Questions:</label>
                 <input type="number" id="total-questions" value="10" min="1" max="50">
             </div>
+            <div class="config-section">
+                <h3>Operations to Include</h3>
+                <div class="operations-grid">
+                    <label class="operation-option">
+                        <input type="checkbox" id="operation-add" checked>
+                        <span class="operation-label">➕ Addition (+)</span>
+                    </label>
+                    <label class="operation-option">
+                        <input type="checkbox" id="operation-subtract" checked>
+                        <span class="operation-label">➖ Subtraction (-)</span>
+                    </label>
+                    <label class="operation-option">
+                        <input type="checkbox" id="operation-multiply" checked>
+                        <span class="operation-label">✖️ Multiplication (×)</span>
+                    </label>
+                    <label class="operation-option">
+                        <input type="checkbox" id="operation-divide" checked>
+                        <span class="operation-label">➗ Division (÷)</span>
+                    </label>
+                </div>
+            </div>
             <button id="start-game" class="btn btn-primary">Start Game</button>
         </div>
 
@@ -48,6 +69,7 @@
             <div class="game-header">
                 <div class="score">Score: <span id="current-score">0</span></div>
                 <div class="progress">Question <span id="current-question">1</span> of <span id="total-questions-display">10</span></div>
+                <div class="operations">Operations: <span id="operations-display">➕ ➖ ✖️ ➗</span></div>
             </div>
 
             <div class="question-container">
