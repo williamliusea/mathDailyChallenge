@@ -371,46 +371,239 @@ class MathGame {
         this.questions = [];
         const operations = this.selectedOperations || ['+', '-', '*', '/']; // Fallback to all operations
         
-        for (let i = 0; i < this.totalQuestions; i++) {
-            const operation = operations[Math.floor(Math.random() * operations.length)];
-            let x, y, question, answer;
+        // Get failed questions from history, categorized by time period
+        const failedQuestionsByPeriod = this.getFailedQuestionsByTimePeriod();
+        
+        // If no failed questions exist, generate all new questions
+        if (failedQuestionsByPeriod.total === 0) {
+            this.generateAllNewQuestions(operations);
+            return;
+        }
+        
+        // Calculate how many questions to use from each category
+        const questionAllocation = this.calculateQuestionAllocation(failedQuestionsByPeriod);
+        
+        // Generate questions based on allocation
+        this.generateQuestionsFromAllocation(questionAllocation, failedQuestionsByPeriod, operations);
+        
+        // Safety check: ensure we have the required number of questions
+        if (this.questions.length < this.totalQuestions) {
+            this.ensureQuestionSetComplete(operations);
+        }
+    }
+
+    getFailedQuestionsByTimePeriod() {
+        const allResults = this.getTestResults();
+        const now = new Date();
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const sevenDaysAgo = new Date(now);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const thirtyDaysAgo = new Date(now);
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const yesterdayQuestions = [];
+        const sevenDayQuestions = [];
+        const thirtyDayQuestions = [];
+        
+        allResults.forEach(result => {
+            const resultDate = new Date(result.datetime);
             
-            do {
-                x = Math.floor(Math.random() * (this.xMax - this.xMin + 1)) + this.xMin;
-                y = Math.floor(Math.random() * (this.yMax - this.yMin + 1)) + this.yMin;
-                
-                switch (operation) {
-                    case '+':
-                        question = `${x} + ${y} = ?`;
-                        answer = x + y;
-                        break;
-                    case '-':
-                        // Ensure result is not negative
-                        if (x < y) {
-                            [x, y] = [y, x]; // Swap to ensure positive result
-                        }
-                        question = `${x} - ${y} = ?`;
-                        answer = x - y;
-                        break;
-                    case '*':
-                        question = `${x} × ${y} = ?`;
-                        answer = x * y;
-                        break;
-                    case '/':
-                        // Ensure division results in whole numbers
-                        const product = x * y;
-                        question = `${product} ÷ ${x} = ?`;
-                        answer = y;
-                        break;
-                }
-            } while (this.questions.some(q => q.question === question)); // Avoid duplicates
-            
+            // Only include questions from the last 30 days
+            if (resultDate >= thirtyDaysAgo) {
+                result.failedQuestions.forEach(failedQ => {
+                    const questionData = {
+                        ...failedQ,
+                        operation: this.detectOperationFromQuestion(failedQ.question),
+                        x: this.extractNumbersFromQuestion(failedQ.question).x,
+                        y: this.extractNumbersFromQuestion(failedQ.question).y,
+                        failedDate: resultDate
+                    };
+                    
+                    if (resultDate >= yesterday) {
+                        yesterdayQuestions.push(questionData);
+                    } else if (resultDate >= sevenDaysAgo) {
+                        sevenDayQuestions.push(questionData);
+                    } else {
+                        thirtyDayQuestions.push(questionData);
+                    }
+                });
+            }
+        });
+        
+        return {
+            yesterday: yesterdayQuestions,
+            sevenDay: sevenDayQuestions,
+            thirtyDay: thirtyDayQuestions,
+            total: yesterdayQuestions.length + sevenDayQuestions.length + thirtyDayQuestions.length
+        };
+    }
+
+    calculateQuestionAllocation(failedQuestionsByPeriod) {
+        const totalQuestions = this.totalQuestions;
+        const allocation = {
+            yesterday: 0,
+            sevenDay: 0,
+            thirtyDay: 0,
+            new: 0
+        };
+        
+        // Calculate desired allocation based on percentages
+        const desiredYesterday = Math.floor(totalQuestions * 0.3);
+        const desiredSevenDay = Math.floor(totalQuestions * 0.2);
+        const desiredThirtyDay = Math.floor(totalQuestions * 0.1);
+        const desiredNew = totalQuestions - desiredYesterday - desiredSevenDay - desiredThirtyDay;
+        
+        // Allocate based on actual availability
+        allocation.yesterday = Math.min(desiredYesterday, failedQuestionsByPeriod.yesterday.length);
+        allocation.sevenDay = Math.min(desiredSevenDay, failedQuestionsByPeriod.sevenDay.length);
+        allocation.thirtyDay = Math.min(desiredThirtyDay, failedQuestionsByPeriod.thirtyDay.length);
+        
+        // Calculate remaining questions for new questions
+        const usedFromHistory = allocation.yesterday + allocation.sevenDay + allocation.thirtyDay;
+        allocation.new = totalQuestions - usedFromHistory;
+        
+        return allocation;
+    }
+
+    generateQuestionsFromAllocation(allocation, failedQuestionsByPeriod, operations) {
+        // Add yesterday's questions
+        for (let i = 0; i < allocation.yesterday; i++) {
+            const failedQ = failedQuestionsByPeriod.yesterday[Math.floor(Math.random() * failedQuestionsByPeriod.yesterday.length)];
             this.questions.push({
-                question,
-                answer,
-                operation,
-                x,
-                y
+                question: failedQ.question,
+                answer: failedQ.correctAnswer,
+                operation: failedQ.operation,
+                x: failedQ.x,
+                y: failedQ.y,
+                isFromHistory: true
+            });
+        }
+        
+        // Add 7-day questions
+        for (let i = 0; i < allocation.sevenDay; i++) {
+            const failedQ = failedQuestionsByPeriod.sevenDay[Math.floor(Math.random() * failedQuestionsByPeriod.sevenDay.length)];
+            this.questions.push({
+                question: failedQ.question,
+                answer: failedQ.correctAnswer,
+                operation: failedQ.operation,
+                x: failedQ.x,
+                y: failedQ.y,
+                isFromHistory: true
+            });
+        }
+        
+        // Add 30-day questions
+        for (let i = 0; i < allocation.thirtyDay; i++) {
+            const failedQ = failedQuestionsByPeriod.thirtyDay[Math.floor(Math.random() * failedQuestionsByPeriod.thirtyDay.length)];
+            this.questions.push({
+                question: failedQ.question,
+                answer: failedQ.correctAnswer,
+                operation: failedQ.operation,
+                x: failedQ.x,
+                y: failedQ.y,
+                isFromHistory: true
+            });
+        }
+        
+        // Add new questions
+        for (let i = 0; i < allocation.new; i++) {
+            const newQuestion = this.generateSingleNewQuestion(operations);
+            this.questions.push({
+                question: newQuestion.question,
+                answer: newQuestion.answer,
+                operation: newQuestion.operation,
+                x: newQuestion.x,
+                y: newQuestion.y,
+                isFromHistory: false
+            });
+        }
+    }
+
+    generateAllNewQuestions(operations) {
+        for (let i = 0; i < this.totalQuestions; i++) {
+            const newQuestion = this.generateSingleNewQuestion(operations);
+            this.questions.push({
+                question: newQuestion.question,
+                answer: newQuestion.answer,
+                operation: newQuestion.operation,
+                x: newQuestion.x,
+                y: newQuestion.y,
+                isFromHistory: false
+            });
+        }
+    }
+
+    generateSingleNewQuestion(operations) {
+        let question, answer, operation, x, y;
+        
+        operation = operations[Math.floor(Math.random() * operations.length)];
+        
+        do {
+            x = Math.floor(Math.random() * (this.xMax - this.xMin + 1)) + this.xMin;
+            y = Math.floor(Math.random() * (this.yMax - this.yMin + 1)) + this.yMin;
+            
+            switch (operation) {
+                case '+':
+                    question = `${x} + ${y} = ?`;
+                    answer = x + y;
+                    break;
+                case '-':
+                    // Ensure result is not negative
+                    if (x < y) {
+                        [x, y] = [y, x]; // Swap to ensure positive result
+                    }
+                    question = `${x} - ${y} = ?`;
+                    answer = x - y;
+                    break;
+                case '*':
+                    question = `${x} × ${y} = ?`;
+                    answer = x * y;
+                    break;
+                case '/':
+                    // Ensure division results in whole numbers
+                    const product = x * y;
+                    question = `${product} ÷ ${x} = ?`;
+                    answer = y;
+                    break;
+            }
+        } while (this.questions.some(q => q.question === question)); // Avoid duplicates
+        
+        return { question, answer, operation, x, y };
+    }
+
+
+    detectOperationFromQuestion(question) {
+        if (question.includes(' + ')) return '+';
+        if (question.includes(' - ')) return '-';
+        if (question.includes(' × ')) return '*';
+        if (question.includes(' ÷ ')) return '/';
+        return '+'; // Default fallback
+    }
+
+    extractNumbersFromQuestion(question) {
+        const numbers = question.match(/\d+/g);
+        if (numbers && numbers.length >= 2) {
+            return {
+                x: parseInt(numbers[0]),
+                y: parseInt(numbers[1])
+            };
+        }
+        return { x: 1, y: 1 }; // Default fallback
+    }
+
+
+    // Fallback method to ensure we always have enough questions
+    ensureQuestionSetComplete(operations) {
+        while (this.questions.length < this.totalQuestions) {
+            const newQuestion = this.generateSingleNewQuestion(operations);
+            this.questions.push({
+                question: newQuestion.question,
+                answer: newQuestion.answer,
+                operation: newQuestion.operation,
+                x: newQuestion.x,
+                y: newQuestion.y,
+                isFromHistory: false
             });
         }
     }
