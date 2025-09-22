@@ -374,6 +374,15 @@ class MathGame {
         // Get failed questions from history, categorized by time period
         const failedQuestionsByPeriod = this.getFailedQuestionsByTimePeriod();
         
+        // Debug logging
+        console.log('Selected operations:', this.selectedOperations);
+        console.log('Failed questions by period:', {
+            yesterday: failedQuestionsByPeriod.yesterday.length,
+            sevenDay: failedQuestionsByPeriod.sevenDay.length,
+            thirtyDay: failedQuestionsByPeriod.thirtyDay.length,
+            total: failedQuestionsByPeriod.total
+        });
+        
         // If no failed questions exist, generate all new questions
         if (failedQuestionsByPeriod.total === 0) {
             this.generateAllNewQuestions(operations);
@@ -406,6 +415,9 @@ class MathGame {
         const sevenDayQuestions = [];
         const thirtyDayQuestions = [];
         
+        // Get selected operations for filtering
+        const selectedOperations = this.selectedOperations || ['+', '-', '*', '/'];
+        
         allResults.forEach(result => {
             const resultDate = new Date(result.datetime);
             
@@ -420,12 +432,15 @@ class MathGame {
                         failedDate: resultDate
                     };
                     
-                    if (resultDate >= yesterday) {
-                        yesterdayQuestions.push(questionData);
-                    } else if (resultDate >= sevenDaysAgo) {
-                        sevenDayQuestions.push(questionData);
-                    } else {
-                        thirtyDayQuestions.push(questionData);
+                    // Only include questions that match selected operations
+                    if (selectedOperations.includes(questionData.operation)) {
+                        if (resultDate >= yesterday) {
+                            yesterdayQuestions.push(questionData);
+                        } else if (resultDate >= sevenDaysAgo) {
+                            sevenDayQuestions.push(questionData);
+                        } else {
+                            thirtyDayQuestions.push(questionData);
+                        }
                     }
                 });
             }
@@ -467,46 +482,52 @@ class MathGame {
     }
 
     generateQuestionsFromAllocation(allocation, failedQuestionsByPeriod, operations) {
-        // Add yesterday's questions
-        for (let i = 0; i < allocation.yesterday; i++) {
-            const failedQ = failedQuestionsByPeriod.yesterday[Math.floor(Math.random() * failedQuestionsByPeriod.yesterday.length)];
-            this.questions.push({
-                question: failedQ.question,
-                answer: failedQ.correctAnswer,
-                operation: failedQ.operation,
-                x: failedQ.x,
-                y: failedQ.y,
-                isFromHistory: true
-            });
+        // Add yesterday's questions (only if available and matching operations)
+        if (failedQuestionsByPeriod.yesterday.length > 0) {
+            for (let i = 0; i < allocation.yesterday; i++) {
+                const failedQ = failedQuestionsByPeriod.yesterday[Math.floor(Math.random() * failedQuestionsByPeriod.yesterday.length)];
+                this.questions.push({
+                    question: failedQ.question,
+                    answer: failedQ.correctAnswer,
+                    operation: failedQ.operation,
+                    x: failedQ.x,
+                    y: failedQ.y,
+                    isFromHistory: true
+                });
+            }
         }
         
-        // Add 7-day questions
-        for (let i = 0; i < allocation.sevenDay; i++) {
-            const failedQ = failedQuestionsByPeriod.sevenDay[Math.floor(Math.random() * failedQuestionsByPeriod.sevenDay.length)];
-            this.questions.push({
-                question: failedQ.question,
-                answer: failedQ.correctAnswer,
-                operation: failedQ.operation,
-                x: failedQ.x,
-                y: failedQ.y,
-                isFromHistory: true
-            });
+        // Add 7-day questions (only if available and matching operations)
+        if (failedQuestionsByPeriod.sevenDay.length > 0) {
+            for (let i = 0; i < allocation.sevenDay; i++) {
+                const failedQ = failedQuestionsByPeriod.sevenDay[Math.floor(Math.random() * failedQuestionsByPeriod.sevenDay.length)];
+                this.questions.push({
+                    question: failedQ.question,
+                    answer: failedQ.correctAnswer,
+                    operation: failedQ.operation,
+                    x: failedQ.x,
+                    y: failedQ.y,
+                    isFromHistory: true
+                });
+            }
         }
         
-        // Add 30-day questions
-        for (let i = 0; i < allocation.thirtyDay; i++) {
-            const failedQ = failedQuestionsByPeriod.thirtyDay[Math.floor(Math.random() * failedQuestionsByPeriod.thirtyDay.length)];
-            this.questions.push({
-                question: failedQ.question,
-                answer: failedQ.correctAnswer,
-                operation: failedQ.operation,
-                x: failedQ.x,
-                y: failedQ.y,
-                isFromHistory: true
-            });
+        // Add 30-day questions (only if available and matching operations)
+        if (failedQuestionsByPeriod.thirtyDay.length > 0) {
+            for (let i = 0; i < allocation.thirtyDay; i++) {
+                const failedQ = failedQuestionsByPeriod.thirtyDay[Math.floor(Math.random() * failedQuestionsByPeriod.thirtyDay.length)];
+                this.questions.push({
+                    question: failedQ.question,
+                    answer: failedQ.correctAnswer,
+                    operation: failedQ.operation,
+                    x: failedQ.x,
+                    y: failedQ.y,
+                    isFromHistory: true
+                });
+            }
         }
         
-        // Add new questions
+        // Add new questions (always generate these to fill remaining slots)
         for (let i = 0; i < allocation.new; i++) {
             const newQuestion = this.generateSingleNewQuestion(operations);
             this.questions.push({
