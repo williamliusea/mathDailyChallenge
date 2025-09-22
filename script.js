@@ -8,6 +8,7 @@ class MathGame {
         this.gameState = 'config'; // 'config', 'playing', 'results', 'history', 'test-detail'
         this.answerSubmitted = false;
         this.currentTestData = null; // Store current test data for saving
+        this.attemptCount = 0; // Track number of attempts per question
         
         this.initializeElements();
         this.bindEvents();
@@ -643,6 +644,7 @@ class MathGame {
         this.userAnswerInput.value = '';
         this.userAnswerInput.focus();
         this.answerSubmitted = false;
+        this.attemptCount = 0; // Reset attempt count for new question
         
         // Enable submit button
         this.submitAnswerBtn.disabled = false;
@@ -663,31 +665,63 @@ class MathGame {
             return;
         }
 
-        // Disable submit button and mark as submitted
-        this.answerSubmitted = true;
-        this.submitAnswerBtn.disabled = true;
-        this.submitAnswerBtn.textContent = 'Submitted';
-
+        this.attemptCount++;
         const isCorrect = Math.abs(userAnswer - this.currentAnswer) < 0.001; // Handle floating point precision
         
         if (isCorrect) {
+            // Correct answer - proceed normally
+            this.answerSubmitted = true;
+            this.submitAnswerBtn.disabled = true;
+            this.submitAnswerBtn.textContent = 'Submitted';
+            
             this.score += 10;
             this.playCorrectSound();
             this.showFeedback(true, userAnswer, this.currentAnswer);
         } else {
-            // Record failed question
-            const currentQuestionData = this.questions[this.currentQuestion];
-            this.failedQuestions.push({
-                question: currentQuestionData.question,
-                userAnswer: userAnswer,
-                correctAnswer: this.currentAnswer
-            });
-            
-            this.playIncorrectSound();
-            this.showFeedback(false, userAnswer, this.currentAnswer);
+            // Wrong answer - check if this is first or second attempt
+            if (this.attemptCount === 1) {
+                // First wrong attempt - give second chance
+                this.playIncorrectSound();
+                this.showSecondChanceFeedback(userAnswer);
+            } else {
+                // Second wrong attempt - show correct answer
+                this.answerSubmitted = true;
+                this.submitAnswerBtn.disabled = true;
+                this.submitAnswerBtn.textContent = 'Submitted';
+                
+                // Record failed question
+                const currentQuestionData = this.questions[this.currentQuestion];
+                this.failedQuestions.push({
+                    question: currentQuestionData.question,
+                    userAnswer: userAnswer,
+                    correctAnswer: this.currentAnswer
+                });
+                
+                this.playIncorrectSound();
+                this.showFeedback(false, userAnswer, this.currentAnswer);
+            }
         }
         
         this.updateGameDisplay();
+    }
+
+    showSecondChanceFeedback(userAnswer) {
+        this.feedbackElement.classList.remove('hidden');
+        this.feedbackElement.className = 'feedback incorrect';
+        this.feedbackContent.innerHTML = `
+            <div class="feedback-content">❌ Incorrect. You have one more try!</div>
+            <div class="second-chance-message">
+                <p>Think carefully and try again. You can do it! 💪</p>
+            </div>
+        `;
+        
+        // Clear the input and focus for second attempt
+        this.userAnswerInput.value = '';
+        this.userAnswerInput.focus();
+        
+        // Keep submit button enabled for second attempt
+        this.submitAnswerBtn.disabled = false;
+        this.submitAnswerBtn.textContent = 'Try Again';
     }
 
     showFeedback(isCorrect, userAnswer, correctAnswer) {
@@ -810,6 +844,7 @@ class MathGame {
         this.currentQuestion = 0;
         this.score = 0;
         this.answerSubmitted = false;
+        this.attemptCount = 0; // Reset attempt count
         this.failedQuestions = []; // Reset failed questions
         this.showPanel('game');
         this.updateGameDisplay();

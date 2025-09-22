@@ -672,6 +672,22 @@ header p {
     color: #2f855a;
 }
 
+.second-chance-message {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.second-chance-message p {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+}
+
 .results-panel h2 {
     font-size: 3rem;
     margin-bottom: 20px;
