@@ -11,7 +11,9 @@ class MathGame {
         
         this.initializeElements();
         this.bindEvents();
+        this.bindSettingsEvents();
         this.initializeSounds();
+        this.loadSettings();
     }
 
     initializeElements() {
@@ -851,12 +853,18 @@ class MathGame {
         this.historyPanel.classList.add('hidden');
         this.testDetailPanel.classList.add('hidden');
         
-        // Show/hide header buttons
-        if (panelName === 'history' || panelName === 'test-detail') {
+        // Show/hide header buttons based on panel
+        if (panelName === 'config') {
+            // Only show "View History" on the config page
+            this.showHistoryBtn.classList.remove('hidden');
+            this.showGameBtn.classList.add('hidden');
+        } else if (panelName === 'history' || panelName === 'test-detail') {
+            // Show "Back to Game" when in history or test detail
             this.showHistoryBtn.classList.add('hidden');
             this.showGameBtn.classList.remove('hidden');
         } else {
-            this.showHistoryBtn.classList.remove('hidden');
+            // Hide both buttons for game and results panels
+            this.showHistoryBtn.classList.add('hidden');
             this.showGameBtn.classList.add('hidden');
         }
         
@@ -880,6 +888,66 @@ class MathGame {
         }
         
         this.gameState = panelName;
+    }
+
+    // Settings persistence functions
+    saveSettings() {
+        const settings = {
+            xMin: this.xMinInput.value,
+            xMax: this.xMaxInput.value,
+            yMin: this.yMinInput.value,
+            yMax: this.yMaxInput.value,
+            totalQuestions: this.totalQuestionsInput.value,
+            operationAdd: this.operationAdd.checked,
+            operationSubtract: this.operationSubtract.checked,
+            operationMultiply: this.operationMultiply.checked,
+            operationDivide: this.operationDivide.checked
+        };
+        
+        localStorage.setItem('mathGameSettings', JSON.stringify(settings));
+    }
+
+    loadSettings() {
+        const savedSettings = localStorage.getItem('mathGameSettings');
+        if (savedSettings) {
+            try {
+                const settings = JSON.parse(savedSettings);
+                
+                // Load number inputs
+                this.xMinInput.value = settings.xMin || 1;
+                this.xMaxInput.value = settings.xMax || 10;
+                this.yMinInput.value = settings.yMin || 1;
+                this.yMaxInput.value = settings.yMax || 10;
+                this.totalQuestionsInput.value = settings.totalQuestions || 10;
+                
+                // Load operation checkboxes
+                this.operationAdd.checked = settings.operationAdd !== false; // Default to true
+                this.operationSubtract.checked = settings.operationSubtract !== false; // Default to true
+                this.operationMultiply.checked = settings.operationMultiply !== false; // Default to true
+                this.operationDivide.checked = settings.operationDivide !== false; // Default to true
+                
+                console.log('Settings loaded from localStorage:', settings);
+            } catch (error) {
+                console.log('Error loading settings:', error);
+                // Use default values if loading fails
+            }
+        }
+    }
+
+    // Add event listeners for auto-saving settings
+    bindSettingsEvents() {
+        // Save settings when any input changes
+        this.xMinInput.addEventListener('change', () => this.saveSettings());
+        this.xMaxInput.addEventListener('change', () => this.saveSettings());
+        this.yMinInput.addEventListener('change', () => this.saveSettings());
+        this.yMaxInput.addEventListener('change', () => this.saveSettings());
+        this.totalQuestionsInput.addEventListener('change', () => this.saveSettings());
+        
+        // Save settings when checkboxes change
+        this.operationAdd.addEventListener('change', () => this.saveSettings());
+        this.operationSubtract.addEventListener('change', () => this.saveSettings());
+        this.operationMultiply.addEventListener('change', () => this.saveSettings());
+        this.operationDivide.addEventListener('change', () => this.saveSettings());
     }
 }
 
