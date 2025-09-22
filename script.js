@@ -833,10 +833,10 @@ class MathGame {
         const operationsDisplay = document.getElementById('operations-display');
         if (operationsDisplay) {
             const operationSymbols = {
-                '+': '➕',
-                '-': '➖', 
-                '*': '✖️',
-                '/': '➗'
+                '+': '+',
+                '-': '-', 
+                '*': '×',
+                '/': '÷'
             };
             
             const selectedOps = this.selectedOperations || [];

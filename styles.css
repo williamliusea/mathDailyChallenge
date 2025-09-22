@@ -189,11 +189,13 @@ header p {
 
 .operations {
     font-size: 1.1rem;
+    color: white;
 }
 
 #operations-display {
     font-size: 1.3rem;
     margin-left: 5px;
+    color: inherit;
 }
 
 .question-container {
