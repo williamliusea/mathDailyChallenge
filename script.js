@@ -67,6 +67,9 @@ class MathGame {
         this.testDetailTitle = document.getElementById('test-detail-title');
         this.testDetailContent = document.getElementById('test-detail-content');
         this.backToHistoryBtn = document.getElementById('back-to-history');
+        
+        // Test results elements
+        this.testResultsPanel = document.getElementById('test-results-panel');
     }
 
     bindEvents() {
@@ -81,6 +84,21 @@ class MathGame {
         this.showGameBtn.addEventListener('click', () => this.showGame());
         this.backToGameBtn.addEventListener('click', () => this.showGame());
         this.backToHistoryBtn.addEventListener('click', () => this.showHistory());
+        
+        // Test runner - only show if test=1 query parameter is present
+        const runTestsBtn = document.getElementById('run-tests');
+        if (runTestsBtn) {
+            // Check for test=1 query parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const isTestMode = urlParams.get('test') === '1';
+            
+            if (isTestMode) {
+                runTestsBtn.classList.remove('hidden');
+                runTestsBtn.addEventListener('click', () => this.runTests());
+            } else {
+                runTestsBtn.classList.add('hidden');
+            }
+        }
         
         // Allow Enter key to submit answer
         this.userAnswerInput.addEventListener('keypress', (e) => {
@@ -1145,6 +1163,7 @@ class MathGame {
         this.resultsPanel.classList.add('hidden');
         this.historyPanel.classList.add('hidden');
         this.testDetailPanel.classList.add('hidden');
+        this.testResultsPanel.classList.add('hidden');
     }
 
     showPanelWithDelay(panelName, delay = 100) {
@@ -1159,6 +1178,16 @@ class MathGame {
         this.answerSubmitted = false;
         this.attemptCount = 0;
         this.failedQuestions = [];
+    }
+
+    runTests() {
+        // Show test results in a modal or alert
+        if (typeof MathGameTestSuite !== 'undefined') {
+            const testSuite = new MathGameTestSuite();
+            testSuite.runAllTests();
+        } else {
+            alert('Test suite not loaded. Please refresh the page and try again.');
+        }
     }
 
     // Settings persistence functions

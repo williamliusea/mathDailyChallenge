@@ -19,6 +19,7 @@
             <div class="header-buttons">
                 <button id="show-history" class="btn btn-secondary">📊 View History</button>
                 <button id="show-game" class="btn btn-primary hidden">🎮 Back to Game</button>
+                <button id="run-tests" class="btn btn-test hidden">🧪 Run Tests</button>
             </div>
         </header>
 
@@ -135,8 +136,38 @@
             <div id="test-detail-content" class="test-detail-content"></div>
             <button id="back-to-history" class="btn btn-secondary">Back to History</button>
         </div>
+
+        <!-- Test Results Panel -->
+        <div id="test-results-panel" class="test-results-panel hidden">
+            <h2>🧪 Test Results</h2>
+            <div id="test-results-content" class="test-results-content">
+                <div class="test-summary">
+                    <div class="test-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="passed-count">0</div>
+                            <div class="stat-label">Passed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="failed-count">0</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-count">0</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="success-rate">0%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="test-details" class="test-details"></div>
+            </div>
+            <button id="close-test-results" class="btn btn-primary">Close</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
+    <script src="test.js"></script>
 </body>
 </html>
