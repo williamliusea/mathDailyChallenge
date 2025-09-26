@@ -371,7 +371,7 @@ class MathGame {
         this.updateGameDisplay();
         
         // Small delay to ensure panel is visible before scrolling
-        setTimeout(() => {
+        this.delay(() => {
             this.showNextQuestion();
         }, 100);
     }
@@ -687,7 +687,7 @@ class MathGame {
         this.triggerMobileKeyboard(input);
         
         // Check if keyboard appeared after a delay
-        setTimeout(() => {
+        this.delay(() => {
             // If input is not focused or no keyboard, try again
             if (document.activeElement !== input) {
                 this.attemptMobileKeyboardFocus(input, attempt + 1);
@@ -733,13 +733,13 @@ class MathGame {
         input.dispatchEvent(mouseEvent);
         
         // 5. Input event to ensure keyboard stays open
-        setTimeout(() => {
+        this.delay(() => {
             input.dispatchEvent(new Event('input', { bubbles: true }));
             input.dispatchEvent(new Event('focus', { bubbles: true }));
         }, 50);
         
         // 6. Additional focus after a short delay
-        setTimeout(() => {
+        this.delay(() => {
             input.focus();
             // Ensure cursor is at the end
             const length = input.value.length;
@@ -755,32 +755,13 @@ class MathGame {
         const questionContainer = document.querySelector('.question-container');
         
         if (questionContainer) {
-            // Check if screen is small (mobile/tablet)
-            const isSmallScreen = window.innerWidth <= 768 || window.innerHeight <= 600;
-            
-            if (isSmallScreen) {
-                // For small screens, scroll to show the question container at the top
-                questionContainer.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start',
-                    inline: 'center'
-                });
-            } else {
-                // For larger screens, center the question container
-                questionContainer.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center',
-                    inline: 'center'
-                });
-            }
+            const block = this.isSmallScreen() ? 'start' : 'center';
+            this.scrollToElement(questionContainer, block, 'center');
         }
     }
 
     scrollToQuestionOnSmallScreen() {
-        // Check if screen is small (mobile/tablet)
-        const isSmallScreen = window.innerWidth <= 768 || window.innerHeight <= 600;
-        
-        if (isSmallScreen) {
+        if (this.isSmallScreen()) {
             // For small screens, ensure both question and submit button are visible
             const questionElement = this.questionElement;
             const inputElement = this.userAnswerInput;
@@ -809,37 +790,29 @@ class MathGame {
                 });
                 
                 // Additional scroll adjustment after a delay to account for keyboard
-                setTimeout(() => {
-                    // Recalculate after potential keyboard appearance
-                    const currentQuestionRect = questionElement.getBoundingClientRect();
-                    const currentInputRect = inputElement.getBoundingClientRect();
-                    
-                    // If question is not visible, scroll to it
-                    if (currentQuestionRect.top < 0 || currentQuestionRect.bottom > window.innerHeight) {
-                        questionElement.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start',
-                            inline: 'center'
-                        });
-                    }
-                    
-                    // If input is not visible, scroll to it
-                    if (currentInputRect.top < 0 || currentInputRect.bottom > window.innerHeight) {
-                        inputElement.scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'center',
-                            inline: 'center'
-                        });
-                    }
+                this.delay(() => {
+                    this.adjustScrollForKeyboard(questionElement, inputElement);
                 }, 500);
             }
         } else {
             // For larger screens, just scroll to input
-            this.userAnswerInput.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center',
-                inline: 'center'
-            });
+            this.scrollToElement(this.userAnswerInput, 'center', 'center');
+        }
+    }
+
+    adjustScrollForKeyboard(questionElement, inputElement) {
+        // Recalculate after potential keyboard appearance
+        const currentQuestionRect = questionElement.getBoundingClientRect();
+        const currentInputRect = inputElement.getBoundingClientRect();
+        
+        // If question is not visible, scroll to it
+        if (currentQuestionRect.top < 0 || currentQuestionRect.bottom > window.innerHeight) {
+            this.scrollToElement(questionElement, 'start', 'center');
+        }
+        
+        // If input is not visible, scroll to it
+        if (currentInputRect.top < 0 || currentInputRect.bottom > window.innerHeight) {
+            this.scrollToElement(inputElement, 'center', 'center');
         }
     }
 
@@ -921,7 +894,7 @@ class MathGame {
                 <div class="feedback-content">🎉 Correct! Great job!</div>
             `;
             // Auto-proceed to next question after 2 seconds for correct answers
-            setTimeout(() => {
+            this.delay(() => {
                 this.nextQuestion();
             }, 2000);
         } else {
@@ -1029,16 +1002,12 @@ class MathGame {
     restartGame() {
         // Generate new questions and restart
         this.generateQuestions();
-        this.currentQuestion = 0;
-        this.score = 0;
-        this.answerSubmitted = false;
-        this.attemptCount = 0; // Reset attempt count
-        this.failedQuestions = []; // Reset failed questions
+        this.resetGameState();
         this.showPanel('game');
         this.updateGameDisplay();
         
         // Small delay to ensure panel is visible before scrolling
-        setTimeout(() => {
+        this.delay(() => {
             this.showNextQuestion();
         }, 100);
     }
@@ -1074,11 +1043,7 @@ class MathGame {
 
     showPanel(panelName) {
         // Hide all panels
-        this.configPanel.classList.add('hidden');
-        this.gamePanel.classList.add('hidden');
-        this.resultsPanel.classList.add('hidden');
-        this.historyPanel.classList.add('hidden');
-        this.testDetailPanel.classList.add('hidden');
+        this.hideAllPanels();
         
         // Show/hide header buttons based on panel
         if (panelName === 'config') {
@@ -1135,6 +1100,65 @@ class MathGame {
         }
         
         this.gameState = panelName;
+    }
+
+    // Utility Methods
+    delay(callback, ms) {
+        return setTimeout(callback, ms);
+    }
+
+    delayWithRetry(callback, maxAttempts = 5, baseDelay = 200) {
+        let attempt = 0;
+        const tryCallback = () => {
+            if (attempt < maxAttempts) {
+                callback();
+                attempt++;
+                this.delay(tryCallback, baseDelay + (attempt * 100));
+            }
+        };
+        tryCallback();
+    }
+
+    scrollToElement(element, block = 'center', inline = 'center') {
+        if (element) {
+            element.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: block,
+                inline: inline
+            });
+        }
+    }
+
+    scrollToElementWithDelay(element, block = 'center', inline = 'center', delay = 0) {
+        this.delay(() => {
+            this.scrollToElement(element, block, inline);
+        }, delay);
+    }
+
+    isSmallScreen() {
+        return window.innerWidth <= 768 || window.innerHeight <= 600;
+    }
+
+    hideAllPanels() {
+        this.configPanel.classList.add('hidden');
+        this.gamePanel.classList.add('hidden');
+        this.resultsPanel.classList.add('hidden');
+        this.historyPanel.classList.add('hidden');
+        this.testDetailPanel.classList.add('hidden');
+    }
+
+    showPanelWithDelay(panelName, delay = 100) {
+        this.delay(() => {
+            this.showPanel(panelName);
+        }, delay);
+    }
+
+    resetGameState() {
+        this.currentQuestion = 0;
+        this.score = 0;
+        this.answerSubmitted = false;
+        this.attemptCount = 0;
+        this.failedQuestions = [];
     }
 
     // Settings persistence functions
@@ -1213,7 +1237,7 @@ class MathGame {
         
         // Handle orientation change
         window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
+            this.delay(() => {
                 this.handleViewportChange();
                 // Refocus input after orientation change
                 if (this.gameState === 'game' && this.userAnswerInput) {
@@ -1228,12 +1252,12 @@ class MathGame {
         const input = this.userAnswerInput;
         if (input && this.gameState === 'game') {
             // Use smart scrolling for small screens
-            setTimeout(() => {
+            this.delay(() => {
                 this.scrollToQuestionOnSmallScreen();
             }, 100);
             
             // Additional adjustment after keyboard fully appears
-            setTimeout(() => {
+            this.delay(() => {
                 this.scrollToQuestionOnSmallScreen();
             }, 500);
         }
