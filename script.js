@@ -666,14 +666,26 @@ class MathGame {
         // Clear any existing focus
         input.blur();
         
-        // Small delay to ensure DOM is ready
+        // Multiple attempts to ensure keyboard shows on iPhone
+        this.attemptMobileKeyboardFocus(input, 0);
+    }
+
+    attemptMobileKeyboardFocus(input, attempt) {
+        if (attempt >= 5) return; // Max 5 attempts
+        
+        // Focus the input
+        input.focus();
+        
+        // Mobile-specific keyboard triggering techniques
+        this.triggerMobileKeyboard(input);
+        
+        // Check if keyboard appeared after a delay
         setTimeout(() => {
-            // Focus the input
-            input.focus();
-            
-            // Mobile-specific keyboard triggering techniques
-            this.triggerMobileKeyboard(input);
-        }, 100);
+            // If input is not focused or no keyboard, try again
+            if (document.activeElement !== input) {
+                this.attemptMobileKeyboardFocus(input, attempt + 1);
+            }
+        }, 200 + (attempt * 100)); // Increasing delay between attempts
     }
 
     triggerMobileKeyboard(input) {
@@ -686,7 +698,7 @@ class MathGame {
         input.focus();
         input.select();
         
-        // 3. Touch event simulation (for Android)
+        // 3. Touch event simulation (for Android and iOS)
         if ('ontouchstart' in window) {
             const touchEvent = new TouchEvent('touchstart', {
                 bubbles: true,
@@ -705,12 +717,21 @@ class MathGame {
             input.dispatchEvent(touchEvent);
         }
         
-        // 4. Input event to ensure keyboard stays open
+        // 4. Mouse event simulation (helps on some iOS versions)
+        const mouseEvent = new MouseEvent('mousedown', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        });
+        input.dispatchEvent(mouseEvent);
+        
+        // 5. Input event to ensure keyboard stays open
         setTimeout(() => {
             input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('focus', { bubbles: true }));
         }, 50);
         
-        // 5. Additional focus after a short delay
+        // 6. Additional focus after a short delay
         setTimeout(() => {
             input.focus();
             // Ensure cursor is at the end
@@ -718,7 +739,7 @@ class MathGame {
             input.setSelectionRange(length, length);
         }, 200);
         
-        // 6. Smart scrolling for small screens
+        // 7. Smart scrolling for small screens
         this.scrollToQuestionOnSmallScreen();
     }
 
@@ -727,26 +748,57 @@ class MathGame {
         const isSmallScreen = window.innerWidth <= 768 || window.innerHeight <= 600;
         
         if (isSmallScreen) {
-            // Scroll to question first, then input
+            // For small screens, ensure both question and submit button are visible
             const questionElement = this.questionElement;
             const inputElement = this.userAnswerInput;
+            const submitButton = this.submitAnswerBtn;
             
-            if (questionElement && inputElement) {
-                // First scroll to question to make it visible at the top
-                questionElement.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start',
-                    inline: 'center'
+            if (questionElement && inputElement && submitButton) {
+                // Calculate the combined height of question + input + button
+                const questionRect = questionElement.getBoundingClientRect();
+                const inputRect = inputElement.getBoundingClientRect();
+                const buttonRect = submitButton.getBoundingClientRect();
+                
+                // Find the top of the question and bottom of the submit button
+                const topOfQuestion = questionRect.top + window.scrollY;
+                const bottomOfButton = buttonRect.bottom + window.scrollY;
+                
+                // Calculate center point between question and button
+                const centerPoint = topOfQuestion + (bottomOfButton - topOfQuestion) / 2;
+                const viewportHeight = window.innerHeight;
+                
+                // Scroll to show both question and button
+                const scrollTo = centerPoint - (viewportHeight / 2);
+                
+                window.scrollTo({
+                    top: Math.max(0, scrollTo),
+                    behavior: 'smooth'
                 });
                 
-                // Then scroll to input after a short delay
+                // Additional scroll adjustment after a delay to account for keyboard
                 setTimeout(() => {
-                    inputElement.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center',
-                        inline: 'center'
-                    });
-                }, 300);
+                    // Recalculate after potential keyboard appearance
+                    const currentQuestionRect = questionElement.getBoundingClientRect();
+                    const currentInputRect = inputElement.getBoundingClientRect();
+                    
+                    // If question is not visible, scroll to it
+                    if (currentQuestionRect.top < 0 || currentQuestionRect.bottom > window.innerHeight) {
+                        questionElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start',
+                            inline: 'center'
+                        });
+                    }
+                    
+                    // If input is not visible, scroll to it
+                    if (currentInputRect.top < 0 || currentInputRect.bottom > window.innerHeight) {
+                        inputElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center',
+                            inline: 'center'
+                        });
+                    }
+                }, 500);
             }
         } else {
             // For larger screens, just scroll to input
@@ -1142,6 +1194,11 @@ class MathGame {
             setTimeout(() => {
                 this.scrollToQuestionOnSmallScreen();
             }, 100);
+            
+            // Additional adjustment after keyboard fully appears
+            setTimeout(() => {
+                this.scrollToQuestionOnSmallScreen();
+            }, 500);
         }
     }
 }

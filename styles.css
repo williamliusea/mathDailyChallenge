@@ -1113,6 +1113,9 @@ header p {
     .question-container {
         margin-bottom: 20px;
         padding: 15px;
+        /* Ensure container stays visible when keyboard appears */
+        position: relative;
+        z-index: 10;
     }
     
     .question {
@@ -1122,12 +1125,20 @@ header p {
         /* Ensure question stays visible when keyboard appears */
         position: relative;
         z-index: 5;
+        /* Prevent question from being hidden behind keyboard */
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .answer-container {
         /* Keep input accessible but not covering question */
         margin-top: 15px;
         padding: 10px;
+        /* Ensure container stays visible */
+        position: relative;
+        z-index: 10;
     }
     
     #user-answer {
@@ -1135,6 +1146,18 @@ header p {
         padding: 15px 18px;
         width: 100%;
         max-width: 300px;
+        /* Ensure input is always accessible */
+        position: relative;
+        z-index: 15;
+    }
+    
+    /* Ensure submit button is always visible */
+    #submit-answer {
+        position: relative;
+        z-index: 15;
+        /* Make button more prominent on mobile */
+        min-height: 50px;
+        font-size: 1.2rem;
     }
 }
 
@@ -1156,6 +1179,9 @@ header p {
     .question {
         font-size: 1.8rem;
         padding: 15px;
+        /* Ensure question is always visible on very small screens */
+        min-height: 70px;
+        font-size: 1.6rem;
     }
     
     .answer-container {
@@ -1166,6 +1192,8 @@ header p {
         -webkit-box-align: center;
         -ms-flex-align: center;
         align-items: center;
+        /* Ensure proper spacing on very small screens */
+        gap: 15px;
     }
     
     #user-answer {
@@ -1173,6 +1201,16 @@ header p {
         max-width: 280px;
         font-size: 1.2rem;
         padding: 12px 16px;
+        /* Ensure input is prominent on very small screens */
+        min-height: 50px;
+    }
+    
+    /* Make submit button more prominent on very small screens */
+    #submit-answer {
+        min-height: 55px;
+        font-size: 1.3rem;
+        width: 100%;
+        max-width: 280px;
     }
     
     .config-row {
