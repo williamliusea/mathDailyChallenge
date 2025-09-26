@@ -15,6 +15,7 @@ class MathGame {
         this.bindSettingsEvents();
         this.initializeSounds();
         this.loadSettings();
+        this.setupMobileKeyboardHandling();
     }
 
     initializeElements() {
@@ -1004,6 +1005,47 @@ class MathGame {
         this.operationSubtract.addEventListener('change', () => this.saveSettings());
         this.operationMultiply.addEventListener('change', () => this.saveSettings());
         this.operationDivide.addEventListener('change', () => this.saveSettings());
+    }
+
+    setupMobileKeyboardHandling() {
+        // Handle mobile keyboard appearance/disappearance
+        if (window.visualViewport) {
+            // Modern browsers with visual viewport API
+            window.visualViewport.addEventListener('resize', () => {
+                this.handleViewportChange();
+            });
+        } else {
+            // Fallback for older browsers
+            window.addEventListener('resize', () => {
+                this.handleViewportChange();
+            });
+        }
+        
+        // Handle orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                this.handleViewportChange();
+                // Refocus input after orientation change
+                if (this.gameState === 'game' && this.userAnswerInput) {
+                    this.focusInputWithMobileKeyboard();
+                }
+            }, 500);
+        });
+    }
+
+    handleViewportChange() {
+        // Adjust layout when mobile keyboard appears/disappears
+        const input = this.userAnswerInput;
+        if (input && this.gameState === 'game') {
+            // Scroll input into view when keyboard appears
+            setTimeout(() => {
+                input.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center',
+                    inline: 'center'
+                });
+            }, 100);
+        }
     }
 }
 
