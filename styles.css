@@ -1107,6 +1107,37 @@ header p {
 }
 
 /* Enhanced Responsive Design */
+/* Small screen optimizations */
+@media (max-width: 768px) {
+    /* Ensure question is visible and properly positioned */
+    .question-container {
+        margin-bottom: 20px;
+        padding: 15px;
+    }
+    
+    .question {
+        font-size: 2.2rem;
+        padding: 15px;
+        margin-bottom: 20px;
+        /* Ensure question stays visible when keyboard appears */
+        position: relative;
+        z-index: 5;
+    }
+    
+    .answer-container {
+        /* Keep input accessible but not covering question */
+        margin-top: 15px;
+        padding: 10px;
+    }
+    
+    #user-answer {
+        font-size: 18px;
+        padding: 15px 18px;
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
 /* Mobile First Approach */
 @media (max-width: 480px) {
     .container {

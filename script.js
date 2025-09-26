@@ -644,7 +644,6 @@ class MathGame {
         this.questionElement.textContent = question.question;
         this.currentAnswer = question.answer;
         this.userAnswerInput.value = '';
-        this.userAnswerInput.focus();
         this.answerSubmitted = false;
         this.attemptCount = 0; // Reset attempt count for new question
         
@@ -655,6 +654,108 @@ class MathGame {
         // Hide feedback and show question
         this.feedbackElement.classList.add('hidden');
         this.nextQuestionBtn.classList.add('hidden');
+        
+        // Focus input and handle mobile keyboard
+        this.focusInputWithMobileKeyboard();
+    }
+
+    focusInputWithMobileKeyboard(inputElement = null) {
+        // Enhanced mobile keyboard triggering
+        const input = inputElement || this.userAnswerInput;
+        
+        // Clear any existing focus
+        input.blur();
+        
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+            // Focus the input
+            input.focus();
+            
+            // Mobile-specific keyboard triggering techniques
+            this.triggerMobileKeyboard(input);
+        }, 100);
+    }
+
+    triggerMobileKeyboard(input) {
+        // Multiple techniques to ensure keyboard shows on mobile
+        
+        // 1. Click event (triggers keyboard on some devices)
+        input.click();
+        
+        // 2. Focus with selection (helps on iOS)
+        input.focus();
+        input.select();
+        
+        // 3. Touch event simulation (for Android)
+        if ('ontouchstart' in window) {
+            const touchEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                cancelable: true,
+                touches: [new Touch({
+                    identifier: 0,
+                    target: input,
+                    clientX: 0,
+                    clientY: 0,
+                    screenX: 0,
+                    screenY: 0,
+                    pageX: 0,
+                    pageY: 0
+                })]
+            });
+            input.dispatchEvent(touchEvent);
+        }
+        
+        // 4. Input event to ensure keyboard stays open
+        setTimeout(() => {
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        }, 50);
+        
+        // 5. Additional focus after a short delay
+        setTimeout(() => {
+            input.focus();
+            // Ensure cursor is at the end
+            const length = input.value.length;
+            input.setSelectionRange(length, length);
+        }, 200);
+        
+        // 6. Smart scrolling for small screens
+        this.scrollToQuestionOnSmallScreen();
+    }
+
+    scrollToQuestionOnSmallScreen() {
+        // Check if screen is small (mobile/tablet)
+        const isSmallScreen = window.innerWidth <= 768 || window.innerHeight <= 600;
+        
+        if (isSmallScreen) {
+            // Scroll to question first, then input
+            const questionElement = this.questionElement;
+            const inputElement = this.userAnswerInput;
+            
+            if (questionElement && inputElement) {
+                // First scroll to question to make it visible at the top
+                questionElement.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'center'
+                });
+                
+                // Then scroll to input after a short delay
+                setTimeout(() => {
+                    inputElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center',
+                        inline: 'center'
+                    });
+                }, 300);
+            }
+        } else {
+            // For larger screens, just scroll to input
+            this.userAnswerInput.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'center'
+            });
+        }
     }
 
     submitAnswer() {
@@ -790,8 +891,8 @@ class MathGame {
             }
         });
         
-        // Focus on the input
-        correctAnswerInput.focus();
+        // Focus on the input with mobile keyboard support
+        this.focusInputWithMobileKeyboard(correctAnswerInput);
     }
 
     nextQuestion() {
@@ -1037,13 +1138,9 @@ class MathGame {
         // Adjust layout when mobile keyboard appears/disappears
         const input = this.userAnswerInput;
         if (input && this.gameState === 'game') {
-            // Scroll input into view when keyboard appears
+            // Use smart scrolling for small screens
             setTimeout(() => {
-                input.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center',
-                    inline: 'center'
-                });
+                this.scrollToQuestionOnSmallScreen();
             }, 100);
         }
     }
