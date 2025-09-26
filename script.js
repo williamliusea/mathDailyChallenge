@@ -369,7 +369,11 @@ class MathGame {
         // Show game panel
         this.showPanel('game');
         this.updateGameDisplay();
-        this.showNextQuestion();
+        
+        // Small delay to ensure panel is visible before scrolling
+        setTimeout(() => {
+            this.showNextQuestion();
+        }, 100);
     }
 
     generateQuestions() {
@@ -655,6 +659,9 @@ class MathGame {
         this.feedbackElement.classList.add('hidden');
         this.nextQuestionBtn.classList.add('hidden');
         
+        // Scroll to question container when question loads
+        this.scrollToQuestionContainer();
+        
         // Focus input and handle mobile keyboard
         this.focusInputWithMobileKeyboard();
     }
@@ -741,6 +748,32 @@ class MathGame {
         
         // 7. Smart scrolling for small screens
         this.scrollToQuestionOnSmallScreen();
+    }
+
+    scrollToQuestionContainer() {
+        // Scroll to question container when a new question loads
+        const questionContainer = document.querySelector('.question-container');
+        
+        if (questionContainer) {
+            // Check if screen is small (mobile/tablet)
+            const isSmallScreen = window.innerWidth <= 768 || window.innerHeight <= 600;
+            
+            if (isSmallScreen) {
+                // For small screens, scroll to show the question container at the top
+                questionContainer.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start',
+                    inline: 'center'
+                });
+            } else {
+                // For larger screens, center the question container
+                questionContainer.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center',
+                    inline: 'center'
+                });
+            }
+        }
     }
 
     scrollToQuestionOnSmallScreen() {
@@ -1003,7 +1036,11 @@ class MathGame {
         this.failedQuestions = []; // Reset failed questions
         this.showPanel('game');
         this.updateGameDisplay();
-        this.showNextQuestion();
+        
+        // Small delay to ensure panel is visible before scrolling
+        setTimeout(() => {
+            this.showNextQuestion();
+        }, 100);
     }
 
     newGame() {
