@@ -9,7 +9,29 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Math Challenge">
     <title>Math Daily Challenge - Kids Math Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=1.0.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Force reload script - runs before main script -->
+    <script>
+        // Immediate cache busting
+        (function() {
+            // Force reload if this is a refresh
+            if (window.performance && window.performance.navigation && window.performance.navigation.type === 1) {
+                window.location.reload(true);
+            }
+            
+            // Add timestamp to prevent caching
+            const timestamp = Date.now();
+            const url = new URL(window.location);
+            if (!url.searchParams.has('t')) {
+                url.searchParams.set('t', timestamp);
+                window.history.replaceState({}, '', url);
+            }
+        })();
+    </script>
 </head>
 <body>
     <div class="container">
@@ -137,6 +159,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=1.0.0"></script>
 </body>
 </html>

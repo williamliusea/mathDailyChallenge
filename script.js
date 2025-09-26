@@ -10,11 +10,105 @@ class MathGame {
         this.currentTestData = null; // Store current test data for saving
         this.attemptCount = 0; // Track number of attempts per question
         
+        // Force reload on page refresh
+        this.forceReload();
+        
         this.initializeElements();
         this.bindEvents();
         this.bindSettingsEvents();
         this.initializeSounds();
         this.loadSettings();
+    }
+
+    forceReload() {
+        // Multiple cache-busting strategies for maximum compatibility
+        
+        // 1. Check if page was refreshed and force reload
+        if (window.performance && window.performance.navigation) {
+            if (window.performance.navigation.type === 1) {
+                // Page was refreshed/reloaded - force a hard reload
+                window.location.reload(true);
+                return;
+            }
+        }
+        
+        // 2. Add cache-busting parameter to current URL
+        const url = new URL(window.location);
+        const cacheBuster = Date.now();
+        if (!url.searchParams.has('cb')) {
+            url.searchParams.set('cb', cacheBuster);
+            window.history.replaceState({}, '', url);
+        }
+        
+        // 3. Version checking and cache clearing
+        const currentVersion = '1.0.0';
+        const storedVersion = localStorage.getItem('app_version');
+        
+        if (storedVersion !== currentVersion) {
+            localStorage.setItem('app_version', currentVersion);
+            this.clearCache();
+            
+            // Force reload if version changed
+            if (storedVersion && storedVersion !== currentVersion) {
+                window.location.reload(true);
+                return;
+            }
+        }
+        
+        // 4. Additional cache busting for resources
+        this.bustResourceCache();
+        
+        // 5. Register service worker for better cache control
+        this.registerServiceWorker();
+    }
+
+    registerServiceWorker() {
+        // Register a simple service worker to control caching
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {
+                // Service worker registration failed, continue without it
+                console.log('Service worker not available');
+            });
+        }
+    }
+
+    bustResourceCache() {
+        // Force reload of CSS and JS resources
+        const timestamp = Date.now();
+        
+        // Update CSS link if it exists
+        const cssLink = document.querySelector('link[href*="styles.css"]');
+        if (cssLink) {
+            const href = cssLink.getAttribute('href');
+            if (!href.includes('v=')) {
+                cssLink.setAttribute('href', href + '?v=' + timestamp);
+            }
+        }
+        
+        // Update JS script if it exists
+        const jsScript = document.querySelector('script[src*="script.js"]');
+        if (jsScript) {
+            const src = jsScript.getAttribute('src');
+            if (!src.includes('v=')) {
+                jsScript.setAttribute('src', src + '?v=' + timestamp);
+            }
+        }
+    }
+
+    clearCache() {
+        // Clear any cached data that might interfere with updates
+        try {
+            // Clear localStorage items that might be cached
+            const keysToKeep = ['testResults', 'settings'];
+            const allKeys = Object.keys(localStorage);
+            allKeys.forEach(key => {
+                if (!keysToKeep.includes(key)) {
+                    localStorage.removeItem(key);
+                }
+            });
+        } catch (e) {
+            console.log('Cache clearing completed');
+        }
     }
 
     initializeElements() {
