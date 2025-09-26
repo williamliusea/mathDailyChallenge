@@ -24,6 +24,7 @@ class MathGame {
         this.resultsPanel = document.getElementById('results-panel');
         this.historyPanel = document.getElementById('history-panel');
         this.testDetailPanel = document.getElementById('test-detail-panel');
+        this.explanationSection = document.querySelector('.explanation-section');
         
         // Config elements
         this.xMinInput = document.getElementById('x-min');
@@ -907,18 +908,38 @@ class MathGame {
         switch (panelName) {
             case 'config':
                 this.configPanel.classList.remove('hidden');
+                // Show explanation section only on config page
+                if (this.explanationSection) {
+                    this.explanationSection.classList.remove('hidden');
+                }
                 break;
             case 'game':
                 this.gamePanel.classList.remove('hidden');
+                // Hide explanation section during game
+                if (this.explanationSection) {
+                    this.explanationSection.classList.add('hidden');
+                }
                 break;
             case 'results':
                 this.resultsPanel.classList.remove('hidden');
+                // Hide explanation section on results page
+                if (this.explanationSection) {
+                    this.explanationSection.classList.add('hidden');
+                }
                 break;
             case 'history':
                 this.historyPanel.classList.remove('hidden');
+                // Hide explanation section on history page
+                if (this.explanationSection) {
+                    this.explanationSection.classList.add('hidden');
+                }
                 break;
             case 'test-detail':
                 this.testDetailPanel.classList.remove('hidden');
+                // Hide explanation section on test detail page
+                if (this.explanationSection) {
+                    this.explanationSection.classList.add('hidden');
+                }
                 break;
         }
         
