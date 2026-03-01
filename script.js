@@ -76,6 +76,9 @@ class MathGame {
         this.testDetailContent = document.getElementById('test-detail-content');
         this.backToHistoryBtn = document.getElementById('back-to-history');
         
+        // Error display element
+        this.configError = document.getElementById('config-error');
+        
         // Test results elements
         this.testResultsPanel = document.getElementById('test-results-panel');
     }
@@ -352,6 +355,9 @@ class MathGame {
     }
 
     startGame() {
+        // Clear any previous errors
+        this.clearConfigError();
+        
         // Validate configuration
         const xMin = parseInt(this.xMinInput.value);
         const xMax = parseInt(this.xMaxInput.value);
@@ -360,19 +366,19 @@ class MathGame {
         const totalQuestions = parseInt(this.totalQuestionsInput.value);
 
         if (xMin >= xMax || yMin >= yMax) {
-            alert('Maximum values must be greater than minimum values!');
+            this.showConfigError('Maximum values must be greater than minimum values!');
             return;
         }
 
         if (totalQuestions < 1) {
-            alert('Total questions must be at least 1!');
+            this.showConfigError('Total questions must be at least 1!');
             return;
         }
 
         // Check if at least one operation is selected
         const selectedOperations = this.getSelectedOperations();
         if (selectedOperations.length === 0) {
-            alert('Please select at least one operation to practice!');
+            this.showConfigError('Please select at least one operation to practice!');
             return;
         }
 
@@ -850,7 +856,8 @@ class MathGame {
         const userAnswer = parseFloat(this.userAnswerInput.value);
         
         if (isNaN(userAnswer)) {
-            alert('Please enter a valid number!');
+            this.showConfigError('Please enter a valid number!');
+            this.userAnswerInput.focus();
             return;
         }
 
@@ -1196,7 +1203,7 @@ class MathGame {
             const testSuite = new MathGameTestSuite();
             testSuite.runAllTests();
         } else {
-            alert('Test suite not loaded. Please refresh the page and try again.');
+            this.showConfigError('Test suite not loaded. Please add test.js to run tests.');
         }
     }
 
@@ -1305,6 +1312,26 @@ class MathGame {
             this.delay(() => {
                 this.scrollToQuestionOnSmallScreen();
             }, 500);
+        }
+    }
+
+    // Error display methods
+    showConfigError(message) {
+        if (this.configError) {
+            this.configError.textContent = message;
+            this.configError.classList.remove('hidden');
+            
+            // Auto-hide after 5 seconds
+            this.delay(() => {
+                this.clearConfigError();
+            }, 5000);
+        }
+    }
+
+    clearConfigError() {
+        if (this.configError) {
+            this.configError.classList.add('hidden');
+            this.configError.textContent = '';
         }
     }
 }
