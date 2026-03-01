@@ -1223,12 +1223,12 @@ class MathGame {
             try {
                 const settings = JSON.parse(savedSettings);
                 
-                // Load number inputs
-                this.xMinInput.value = settings.xMin || 1;
-                this.xMaxInput.value = settings.xMax || 10;
-                this.yMinInput.value = settings.yMin || 1;
-                this.yMaxInput.value = settings.yMax || 10;
-                this.totalQuestionsInput.value = settings.totalQuestions || 10;
+                // Load number inputs with type validation
+                this.xMinInput.value = this.validateNumberSetting(settings.xMin, 1, 1, 20);
+                this.xMaxInput.value = this.validateNumberSetting(settings.xMax, 10, 1, 20);
+                this.yMinInput.value = this.validateNumberSetting(settings.yMin, 1, 1, 20);
+                this.yMaxInput.value = this.validateNumberSetting(settings.yMax, 10, 1, 20);
+                this.totalQuestionsInput.value = this.validateNumberSetting(settings.totalQuestions, 10, 1, 50);
                 
                 // Load operation checkboxes
                 this.operationAdd.checked = settings.operationAdd !== false; // Default to true
@@ -1242,6 +1242,12 @@ class MathGame {
                 // Use default values if loading fails
             }
         }
+    }
+
+    validateNumberSetting(value, defaultValue, min, max) {
+        const num = parseInt(value, 10);
+        if (isNaN(num)) return defaultValue;
+        return Math.max(min, Math.min(max, num));
     }
 
     // Add event listeners for auto-saving settings
