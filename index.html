@@ -168,6 +168,16 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="test.js"></script>
+    <script>
+        // Conditionally load test.js if it exists (for development/testing)
+        if (new URLSearchParams(window.location.search).get('test') === '1') {
+            const testScript = document.createElement('script');
+            testScript.src = 'test.js';
+            testScript.onerror = function() {
+                console.warn('test.js not found - test suite not loaded');
+            };
+            document.body.appendChild(testScript);
+        }
+    </script>
 </body>
 </html>
