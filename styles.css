@@ -1159,6 +1159,18 @@ header p {
     display: none !important;
 }
 
+/* Error Display */
+.config-error {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-top: 15px;
+    text-align: center;
+    font-weight: bold;
+    animation: slideIn 0.3s ease;
+}
+
 /* Animations */
 @keyframes slideIn {
     from {
