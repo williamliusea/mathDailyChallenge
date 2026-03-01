@@ -517,49 +517,51 @@ class MathGame {
     }
 
     generateQuestionsFromAllocation(allocation, failedQuestionsByPeriod, operations) {
-        // Add yesterday's questions (only if available and matching operations)
-        if (failedQuestionsByPeriod.yesterday.length > 0) {
-            for (let i = 0; i < allocation.yesterday; i++) {
-                const failedQ = failedQuestionsByPeriod.yesterday[Math.floor(Math.random() * failedQuestionsByPeriod.yesterday.length)];
-                this.questions.push({
-                    question: failedQ.question,
-                    answer: failedQ.correctAnswer,
-                    operation: failedQ.operation,
-                    x: failedQ.x,
-                    y: failedQ.y,
-                    isFromHistory: true
-                });
-            }
+        // Create copies of arrays to avoid modifying originals and prevent duplicates
+        const yesterdayAvailable = [...failedQuestionsByPeriod.yesterday];
+        const sevenDayAvailable = [...failedQuestionsByPeriod.sevenDay];
+        const thirtyDayAvailable = [...failedQuestionsByPeriod.thirtyDay];
+        
+        // Add yesterday's questions (without duplicates)
+        for (let i = 0; i < allocation.yesterday && yesterdayAvailable.length > 0; i++) {
+            const idx = Math.floor(Math.random() * yesterdayAvailable.length);
+            const failedQ = yesterdayAvailable.splice(idx, 1)[0];
+            this.questions.push({
+                question: failedQ.question,
+                answer: failedQ.correctAnswer,
+                operation: failedQ.operation,
+                x: failedQ.x,
+                y: failedQ.y,
+                isFromHistory: true
+            });
         }
         
-        // Add 7-day questions (only if available and matching operations)
-        if (failedQuestionsByPeriod.sevenDay.length > 0) {
-            for (let i = 0; i < allocation.sevenDay; i++) {
-                const failedQ = failedQuestionsByPeriod.sevenDay[Math.floor(Math.random() * failedQuestionsByPeriod.sevenDay.length)];
-                this.questions.push({
-                    question: failedQ.question,
-                    answer: failedQ.correctAnswer,
-                    operation: failedQ.operation,
-                    x: failedQ.x,
-                    y: failedQ.y,
-                    isFromHistory: true
-                });
-            }
+        // Add 7-day questions (without duplicates)
+        for (let i = 0; i < allocation.sevenDay && sevenDayAvailable.length > 0; i++) {
+            const idx = Math.floor(Math.random() * sevenDayAvailable.length);
+            const failedQ = sevenDayAvailable.splice(idx, 1)[0];
+            this.questions.push({
+                question: failedQ.question,
+                answer: failedQ.correctAnswer,
+                operation: failedQ.operation,
+                x: failedQ.x,
+                y: failedQ.y,
+                isFromHistory: true
+            });
         }
         
-        // Add 30-day questions (only if available and matching operations)
-        if (failedQuestionsByPeriod.thirtyDay.length > 0) {
-            for (let i = 0; i < allocation.thirtyDay; i++) {
-                const failedQ = failedQuestionsByPeriod.thirtyDay[Math.floor(Math.random() * failedQuestionsByPeriod.thirtyDay.length)];
-                this.questions.push({
-                    question: failedQ.question,
-                    answer: failedQ.correctAnswer,
-                    operation: failedQ.operation,
-                    x: failedQ.x,
-                    y: failedQ.y,
-                    isFromHistory: true
-                });
-            }
+        // Add 30-day questions (without duplicates)
+        for (let i = 0; i < allocation.thirtyDay && thirtyDayAvailable.length > 0; i++) {
+            const idx = Math.floor(Math.random() * thirtyDayAvailable.length);
+            const failedQ = thirtyDayAvailable.splice(idx, 1)[0];
+            this.questions.push({
+                question: failedQ.question,
+                answer: failedQ.correctAnswer,
+                operation: failedQ.operation,
+                x: failedQ.x,
+                y: failedQ.y,
+                isFromHistory: true
+            });
         }
         
         // Add new questions (always generate these to fill remaining slots)
