@@ -1,4 +1,12 @@
 class MathGame {
+    // Question allocation percentages for spaced repetition
+    static QUESTION_ALLOCATION = {
+        YESTERDAY: 0.3,   // 30% from questions failed yesterday
+        SEVEN_DAY: 0.2,   // 20% from questions failed in last 7 days
+        THIRTY_DAY: 0.1,  // 10% from questions failed in last 30 days
+        // Remaining ~40% are new questions
+    };
+
     constructor() {
         this.currentQuestion = 0;
         this.totalQuestions = 10;
@@ -491,9 +499,9 @@ class MathGame {
         };
         
         // Calculate desired allocation based on percentages
-        const desiredYesterday = Math.floor(totalQuestions * 0.3);
-        const desiredSevenDay = Math.floor(totalQuestions * 0.2);
-        const desiredThirtyDay = Math.floor(totalQuestions * 0.1);
+        const desiredYesterday = Math.floor(totalQuestions * MathGame.QUESTION_ALLOCATION.YESTERDAY);
+        const desiredSevenDay = Math.floor(totalQuestions * MathGame.QUESTION_ALLOCATION.SEVEN_DAY);
+        const desiredThirtyDay = Math.floor(totalQuestions * MathGame.QUESTION_ALLOCATION.THIRTY_DAY);
         const desiredNew = totalQuestions - desiredYesterday - desiredSevenDay - desiredThirtyDay;
         
         // Allocate based on actual availability
