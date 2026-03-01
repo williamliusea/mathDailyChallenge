@@ -16,8 +16,8 @@ html {
 }
 
 body {
-    /* Comprehensive font stack with web fonts and fallbacks */
-    font-family: 'Comic Sans MS', 'Comic Sans', 'Trebuchet MS', 'Arial Rounded MT Bold', 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+    /* Professional rounded font stack for educational software */
+    font-family: 'Nunito', 'Quicksand', 'Trebuchet MS', 'Arial Rounded MT Bold', 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     background-attachment: fixed;
     min-height: 100vh;
